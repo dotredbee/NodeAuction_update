@@ -4,8 +4,9 @@ const path = require('path');
 const fs = require('fs');
 const schedule = require('node-schedule')
 const { Good, Auction, User, sequelize } = require('../models');
-const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
-
+const { isLoggedIn, isNotLoggedIn, csurfProtection } = require('./middlewares');
+const { userInputObjectValidateAsync } = require('../utils/validate')
+const joi = require('joi')
 const router = express.Router();
 
 router.use((req, res, next) => {
@@ -13,23 +14,41 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get('/', async (req, res, next) => {
+
+router.get('/', csurfProtection,async (req, res, next) => {
   try {
     const goods = await Good.findAll({ where: { soldId: null } });
+    const csrfToken = req.csrfToken()
+    
+    res.cookie('csrfToken', csrfToken, {
+      httpOnly : true,
+      secure : false, 
+      sameSite : 'strict'
+    })
+
     res.render('index', {
       title: 'NodeAuction',
+      _csrf : csrfToken,
       goods,
       loginError: req.flash('loginError'),
     });
   } catch (error) {
-    console.error(error);
     next(error);
   }
 });
 
-router.get('/join', isNotLoggedIn, (req, res) => {
+router.get('/join', isNotLoggedIn, csurfProtection,(req, res) => {
+  const csrfToken = req.csrfToken();
+  
+  res.cookie('csrfToken', csrfToken, {
+    httpOnly : true,
+    secure : false,
+    sameSite : 'strict'
+  })
+
   res.render('join', {
-    title: '회원가입 - NodeAuction',
+    title : '회원가입 - NodeAuction',
+    _csrf : csrfToken,
     joinError: req.flash('joinError'),
   });
 });
@@ -40,7 +59,6 @@ router.get('/good', isLoggedIn, (req, res) => {
 
 fs.readdir('uploads', (error) => {
   if (error) {
-    console.error('uploads 폴더가 없어 uploads 폴더를 생성합니다.');
     fs.mkdirSync('uploads');
   }
 });
@@ -57,8 +75,15 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) => {
+  const body = req.body;
+  const schema = joi.object().keys({
+    name : joi.string().alphanum().min(12).max(40).required(),
+    price : joi.string().number().required()
+  })
   try {
-    const { name, price } = req.body;
+    await userInputObjectValidateAsync(schema, body)
+    const { name, price } = body;
+
     const good = await Good.create({
       ownerId: req.user.id,
       name,
@@ -83,12 +108,15 @@ router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) =>
     })
     res.redirect('/');
   } catch (error) {
-    console.error(error);
     next(error);
   }
 });
 router.get('/good/:id', isLoggedIn, async (req, res, next) => {
+  const schema = joi.object().keys({
+    id : joi.string().required()
+  })
   try {
+    await userInputObjectValidateAsync(schema, req.parmas)
     const [good, auction] = await Promise.all([
       Good.findOne({
         where: { id: req.params.id },
@@ -110,13 +138,27 @@ router.get('/good/:id', isLoggedIn, async (req, res, next) => {
       auctionError: req.flash('auctionError'),
     });
   } catch (error) {
-    console.error(error);
     next(error);
   }
 });
 
 router.post('/good/:id/bid', isLoggedIn, async (req, res, next) => {
+  const bodySchema = joi.object.keys({
+    bid : joi.number().required(),
+    msg : joi.string().required()
+  })
+  
+  const paramsSchema = joi.object.keys({
+    id : joi.string().required()
+  })
   try {
+    const [ ret1, ret2 ] = await Promise.all([
+      userInputObjectValidateAsync(bodySchema, req.body),
+      userInputObjectValidateAsync(paramsSchema, req.params)
+    ])
+
+    if(!ret1 || !ret2) throw Error('wrong request')
+
     const { bid, msg } = req.body;
     const good = await Good.findOne({
       where: { id: req.params.id },
@@ -147,7 +189,6 @@ router.post('/good/:id/bid', isLoggedIn, async (req, res, next) => {
     });
     return res.send('ok');
   } catch (error) {
-    console.error(error);
     return next(error);
   }
 });

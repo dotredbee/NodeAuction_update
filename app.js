@@ -10,8 +10,6 @@ const dotenv = require('dotenv')
 dotenv.config()
 const checkAuction = require('./checkAuction')
 
-
-
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const { sequelize } = require('./models');

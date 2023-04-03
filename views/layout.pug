@@ -19,6 +19,8 @@ html
           else
             form#login-form(action='/auth/login' method='post')
               .input-group
+                input(type="hidden" name="_csrf" value=_csrf)
+              .input-group
                 label(for='email') 이메일
                 input#email(type='email' name='email' required autofocus)
               .input-group
