@@ -14,10 +14,10 @@ const xssOptions = {
 exports.userInputObjectValidateAsync = async (schema, obj) => {
     try{
         await schema.validateAsync(obj)
-        
         await Promise.all(
             Object.entries(obj).map(([key, val]) => xss(val, xssOptions))   
         )
+        return true
     }catch(err){
         throw err;
     }

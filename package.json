@@ -32,6 +32,7 @@
     "xss": "^1.0.14"
   },
   "devDependencies": {
+    "expect": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0"
   }
 }

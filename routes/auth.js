@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const { isLoggedIn, isNotLoggedIn, csurfProtection } = require('./middlewares');
 const { userInputObjectValidateAsync } = require('../utils/validate')
 const { User } = require('../models');
+const AuthService = require('../services/auth')
 const joi = require('joi')
 const router = express.Router();
 
@@ -20,27 +21,20 @@ router.post('/join', isNotLoggedIn, csurfProtection, async (req, res, next) => {
   })
   try {
     await userInputObjectValidateAsync(schema, body)
+    const userDTO = Object.assign(req.body)
     
-    const {
-      email,
-      nick,
-      password,
-      money
-    } = body;
+    delete userDTO._csrf
     
-    const exUser = await User.findOne({ where: { email } });
-    if (exUser) {
-      req.flash('joinError', '이미 가입된 이메일입니다.');
-      return res.redirect('/join');
-    }
-    const hash = await bcrypt.hash(password, 12);
-    await User.create({
-      email,
-      nick,
-      password: hash,
-      money,
-    });
-    return res.redirect('/');
+    AuthService.join(userDTO, (err, success, info) => {
+      if(err) return next(err)
+      if(!success && info) {
+        req.flash('joinError', info.message)
+        return res.redirect('/join')
+      }
+
+      return res.redirect('/')
+    })
+    
   } catch (error) {
     return next(error);
   }
@@ -60,7 +54,6 @@ router.post('/login', isNotLoggedIn, csurfProtection, async (req, res, next) => 
     await userInputObjectValidateAsync(schema, body)
     passport.authenticate('local', (authError, user, info) => {
       if (authError) {
-        console.error(authError);
         return next(authError);
       }
       if (!user) {
@@ -69,7 +62,6 @@ router.post('/login', isNotLoggedIn, csurfProtection, async (req, res, next) => 
       }
       return req.login(user, (loginError) => {
         if (loginError) {
-          console.error(loginError);
           return next(loginError);
         }
         return res.redirect('/');
