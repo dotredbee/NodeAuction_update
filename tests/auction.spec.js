@@ -8,27 +8,27 @@ describe('auction service test', () => {
         password : "Tester123@4"
     }
 
-    // it('auction register service test', (done) => {
-    //     AuthService._login(tester, (err, success, info) => {
-    //         if(err) return done(err)
+    it('auction register service test', (done) => {
+        AuthService._login(tester, (err, success, info) => {
+            if(err) return done(err)
             
-    //         if(!success) console.log(info.message)
+            if(!success) console.log(info.message)
             
-    //         // user id
-    //         const goodDTO = {
-    //             ownerId : info.id,
-    //             name : "testAuctionItem",
-    //             img : "imgsource",
-    //             price : 10000
-    //         }
-    //         AuctionService.register(goodDTO, (err, success, info) => {
-    //             if(err) return done(err)
+            // user id
+            const goodDTO = {
+                ownerId : info.id,
+                name : "testAuctionItem",
+                img : "imgsource",
+                price : 10000
+            }
+            AuctionService.register(goodDTO, (err, success, info) => {
+                if(err) return done(err)
                 
-    //             expect(success).toEqual(true)
-    //             done()
-    //         })
-    //     })
-    // })
+                expect(success).toEqual(true)
+                done()
+            })
+        })
+    })
 
     it('auction bid service test', (done) => {
         AuthService._login(tester, (err, success, info) => {

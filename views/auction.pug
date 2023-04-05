@@ -4,7 +4,7 @@ block good
   h2= good.name
   div= '등록자: ' + good.owner.nick
   div= '시작가: ' + good.price + '원'
-  strong#time(data-start=good.createdAt)
+  strong#time(data-endtime=good.endTime)
   img#good-img(src='/images/' + good.img)
 
 block content
@@ -51,17 +51,17 @@ block content
     var es = new EventSource("/sse");
     var time = document.querySelector('#time');
     es.onmessage = function (e) {
-      var end = new Date(time.dataset.start);
+      var end = new Date(time.dataset.endtime);
       var server = new Date(parseInt(e.data, 10));
-      end.setDate(end.getDate() + 1);
       if (server >= end) {
         return time.textContent = '00:00:00';
       } else {
         var t = end - server;
-        var seconds = ('0' + Math.floor((t / 1000) % 60)).slice(-2);
-        var minutes = ('0' + Math.floor((t / 1000 / 60) % 60)).slice(-2);
+        var days = Math.floor(t / (1000 * 60 * 60 * 24));
         var hours = ('0' + Math.floor((t / (1000 * 60 * 60)) % 24)).slice(-2);
-        return time.textContent = hours + ':' + minutes + ':' + seconds;
+        var minutes = ('0' + Math.floor((t / 1000 / 60) % 60)).slice(-2);
+        var seconds = ('0' + Math.floor((t / 1000) % 60)).slice(-2);
+        return time.textContent = days + '일 ' + hours + ':' + minutes + ':' + seconds;
       }
     };
     var socket = io.connect('http://localhost:8010', {

@@ -19,6 +19,7 @@ router.use((req, res, next) => {
 router.get('/', csurfProtection,async (req, res, next) => {
   try {
     const goods = await AuctionService.showAll()
+    console.log(goods)
     const csrfToken = req.csrfToken()
     
     res.cookie('csrfToken', csrfToken, {
@@ -75,11 +76,16 @@ const upload = multer({
   }),
   limits: { fileSize: 5 * 1024 * 1024 },
 });
+
+/**
+ * 경매 상품 등록 라우터
+ */
 router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) => {
   const body = req.body;
   const schema = joi.object().keys({
     name : joi.string().alphanum().min(4).max(40).required(),
-    price : joi.number().required()
+    price : joi.number().required(),
+    endTime : joi.string().isoDate().required()
   })
   try {
     await userInputObjectValidateAsync(schema, body)
@@ -89,7 +95,8 @@ router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) =>
       ownerId : req.user.id,
       name,
       img : req.file.filename,
-      price 
+      price,
+      endTime : req.body.endTime,
     }
 
     AuctionService.register(goodDTO, (err, success) => {

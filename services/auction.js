@@ -6,17 +6,17 @@ module.exports = {
      * 
      * 경매 상품 등록 
      * 
-     * @param {object} goodDTO OwnerId, name, img, price
+     * @param {object} goodDTO OwnerId, name, img, price, endTime
      * @param {Callback} done callbcak : err success info
      */
     register : async function(goodDTO, done) {
         try{
             const good = await Good.create(goodDTO)
             
-            const endTime = new Date()
-            endTime.setDate(endTime.getDate() - 1);
+            // const endTime = new Date()
+            // endTime.setDate(endTime.getDate() - 1);
             
-            this._setSoldOutSchedule(endTime, good.id)
+            this._setSoldOutSchedule(goodDTO.endTime, good.id)
             
             done(null, true)
         }catch(err){
@@ -80,6 +80,9 @@ module.exports = {
                 include : { model : Auction },
                 order : [[ {model : Auction }, 'bid', 'DESC' ]]
             })
+            if(good.ownerId === bidDTO.userId)
+                return done(null, false, { message : "상품 등록자는 입찰이 불가합니다." })
+                
             if(good.price > bidDTO.bid)
                 return done(null, false, { message : "시장 가격보다 높게 입찰해야 합니다."})
             
