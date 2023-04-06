@@ -16,7 +16,7 @@ module.exports = {
             // const endTime = new Date()
             // endTime.setDate(endTime.getDate() - 1);
             
-            this._setSoldOutSchedule(goodDTO.endTime, good.id)
+            this.auctionSchedule(goodDTO.endTime, good.id)
             
             done(null, true)
         }catch(err){
@@ -86,7 +86,7 @@ module.exports = {
             if(good.price > bidDTO.bid)
                 return done(null, false, { message : "시장 가격보다 높게 입찰해야 합니다."})
             
-            if(new Date(good.createdAt).valueOf() + (24 * 60 * 60 * 1000) < new Date())
+            if(new Date(good.endTime).valueOf() < new Date())
                 return done(null, false, { message : "경매가 이미 종료되었습니다."})
 
             if(good.auctions[0] && good.auctions[0].bid >= bidDTO.bid)
@@ -104,6 +104,45 @@ module.exports = {
             done(err, false)
         }
     },
+
+    /**
+     * 
+     * 입찰 금액이 가장 높은 사용자에게 낙찰처리
+     * 아무도 입찰하지 않았다면 해당 상품은 삭제 처리 
+     * 
+     * @param {string} 상품 Id 
+     */
+    successfulBid : async function(goodId) {
+       try{
+            console.log('낙찰처리')
+            const success = await Auction.findOne({
+                where : { goodId },
+                order : [[ 'bid', 'DESC' ]]
+            })
+
+            // 입찰자가 없다면 
+            if(!success) {
+                console.log(goodId)
+                await Good.destroy({
+                    where : { id : goodId }
+                })
+                return;        
+            }
+
+            await Promise.all([
+                Good.update(
+                    { soldId : success.userId },
+                    { where : { id : goodId }}
+                ),
+                User.update(
+                    { money : sequelize.literal(`money - ${success.bid}`)},
+                    { where : { id : success.userId }}
+                )
+            ])
+       }catch(err){
+            throw err;
+       }
+    },
     /**
      * 
      * 입력받은 경매 마감 시간이 지나면 경매 마감 합니다.
@@ -115,23 +154,10 @@ module.exports = {
      * @param {Date} endTime    경매 마감 시간
      * @param {String} id       good id 
      */
-    _setSoldOutSchedule : function(endTime, id) {
+    auctionSchedule : async function(endTime, id){
         try{
             schedule.scheduleJob(endTime, async () => {
-                const success = await Auction.findOne({
-                    where : { goodId : id },
-                    order : [[ 'bid', 'DESC' ]]
-                })
-    
-                await Good.update(
-                    { soldId : success.userId },
-                    { where : { id }}    
-                )
-    
-                await User.update(
-                    { money : sequelize.literal(`money - ${success.bid}`) },
-                    { where : { id : success.userId } }
-                )
+                await this.successfulBid(id)
             })
         }catch(err){
             throw err;

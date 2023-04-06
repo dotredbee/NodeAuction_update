@@ -8,7 +8,7 @@ const flash = require('connect-flash')
 const passport = require('passport')
 const dotenv = require('dotenv')
 dotenv.config()
-const checkAuction = require('./checkAuction')
+const checkAuction = require('./modules/checkAuction.module')
 
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
@@ -44,7 +44,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'uploads')));
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
+
 checkAuction()
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
@@ -61,4 +63,5 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+const schedule = require('node-schedule')
 module.exports = app;
