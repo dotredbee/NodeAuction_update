@@ -38,7 +38,7 @@ module.exports = {
                     where : { id },
                     include : {
                         model : User,
-                        as : 'owner'
+                        as : 'Owner'
                     }
                 }),
                 Auction.findAll({
@@ -80,7 +80,8 @@ module.exports = {
                 include : { model : Auction },
                 order : [[ {model : Auction }, 'bid', 'DESC' ]]
             })
-            if(good.ownerId === bidDTO.userId)
+
+            if(good.OwnerId === bidDTO.userId)
                 return done(null, false, { message : "상품 등록자는 입찰이 불가합니다." })
                 
             if(good.price > bidDTO.bid)
@@ -89,14 +90,14 @@ module.exports = {
             if(new Date(good.endTime).valueOf() < new Date())
                 return done(null, false, { message : "경매가 이미 종료되었습니다."})
 
-            if(good.auctions[0] && good.auctions[0].bid >= bidDTO.bid)
+            if(good.Auctions?.bid >= bidDTO.bid)
                 return done(null, false, { message : "이전 입찰가보다 높아야 합니다." })
             
             const result = await Auction.create({
                 bid : bidDTO.bid,
                 msg : bidDTO.msg,
-                userId : bidDTO.userId,
-                goodId : bidDTO.goodId
+                UserId : bidDTO.userId,
+                GoodId : bidDTO.goodId
             })
 
             done(null, true, result) 
@@ -114,7 +115,6 @@ module.exports = {
      */
     successfulBid : async function(goodId) {
        try{
-            console.log('낙찰처리')
             const success = await Auction.findOne({
                 where : { goodId },
                 order : [[ 'bid', 'DESC' ]]
@@ -122,7 +122,6 @@ module.exports = {
 
             // 입찰자가 없다면 
             if(!success) {
-                console.log(goodId)
                 await Good.destroy({
                     where : { id : goodId }
                 })

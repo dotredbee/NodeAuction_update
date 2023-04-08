@@ -17,6 +17,8 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
+db.sequelize = sequelize;
+
 fs
   .readdirSync(__dirname)
   .filter(file => {
@@ -28,8 +30,11 @@ fs
     );
   })
   .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model.model;
+    const model = require(path.join(__dirname, file))
+    console.log(file, model.name)
+    db[model.name] = model;
+    const create = model.init(sequelize)
+    console.log(`model create : ${model.name} > `, create)
   });
 
 Object.keys(db).forEach(modelName => {
@@ -38,13 +43,4 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
-
-db.Good.belongsTo(db.User, { as: 'owner' });
-db.Good.belongsTo(db.User, { as: 'sold' });
-db.User.hasMany(db.Auction)
-db.Good.hasMany(db.Auction)
-db.Auction.belongsTo(db.User)
-db.Auction.belongsTo(db.Good)
 module.exports = db;

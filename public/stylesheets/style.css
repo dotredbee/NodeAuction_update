@@ -62,8 +62,8 @@ input, textarea {
   border: 1px solid black;
   border-collapse: collapse;
 }
-#good-list img { max-height: 45px; vertical-align: top; }
-#good-img { width: 280px; }
+#good-list img { max-height: 100px; vertical-align: top; }
+#good-img { width: 280px; display: block; }
 .error-message { color: red; font-weight: bold; }
 #join-form, #good-form { padding: 10px; text-align: center; }
 footer { text-align: center; }

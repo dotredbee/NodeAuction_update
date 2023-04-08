@@ -13,17 +13,33 @@ const checkAuction = require('./modules/checkAuction.module')
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const { sequelize } = require('./models');
+const nunjucks = require('nunjucks')
 const passportConfig = require('./passport')
 
 const app = express();
-sequelize.sync()
-passportConfig(passport)
+
+
 
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+app.set('view engine', 'html');
+nunjucks.configure('views', {
+  express: app,
+  watch: true,
+});
 
+// User.sync({force : true})
+// Good.sync(({force : true}))
+// Auction.sync({force : true})
+sequelize.sync({ force : false })
+  .then(() => { 
+    console.log('successed connect database')
+  })
+  .catch((err) => {
+    console.error(err)
+  })
+passportConfig(passport)
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

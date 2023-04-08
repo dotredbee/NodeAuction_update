@@ -15,7 +15,7 @@ module.exports = async function checkAuction() {
 
         const targets = await Good.findAll({
             where : {
-                soldId : null,
+                SoldId : null,
             }
         })
         targets.forEach(async (target) => {

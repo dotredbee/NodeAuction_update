@@ -1,32 +1,38 @@
+const Sequelize = require('sequelize');
 
-module.exports = (sequelize, DataTypes) => {
-    const model = sequelize.define('user', {
-        email : {
-            type : DataTypes.STRING(40),
-            allowNull : false,
-            unique : true,
-        },
-        nick : {
-            type : DataTypes.STRING(15),
-            allowNull : false,
-        },
-        password : {
-            type : DataTypes.STRING(100),
-            allowNull : true,
-        },
-        money : {
-            type : DataTypes.INTEGER,
-            allowNull : false,
-            defaultValue : 0,
-        }
+module.exports = class User extends Sequelize.Model {
+  static init(sequelize) {
+    return super.init({
+      email: {
+        type: Sequelize.STRING(40),
+        allowNull: false,
+        unique: true,
+      },
+      nick: {
+        type: Sequelize.STRING(15),
+        allowNull: false,
+      },
+      password: {
+        type: Sequelize.STRING(100),
+        allowNull: true,
+      },
+      money: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
     }, {
-        timestamps : true,
-        paranoid : true
-    })
+      sequelize,
+      timestamps: true,
+      paranoid: true,
+      modelName: 'User',
+      tableName: 'users',
+      charset: 'utf8',
+      collate: 'utf8_general_ci',
+    });
+  }
 
-    return {
-        name : "User",
-        model,
-    }
-}
-
+  static associate(db) {
+    db.User.hasMany(db.Auction);
+  }
+};
