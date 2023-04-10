@@ -1,6 +1,6 @@
 const { Good } = require('../models')
 const { successfulBid, auctionSchedule } = require('../services/auction')
-const schedule = require('node-schedule')
+
 /**
  * 
  * 서버 시잔 전 (재시작 포함)
@@ -10,19 +10,24 @@ const schedule = require('node-schedule')
  */
 module.exports = async function checkAuction() {
     try{
-        
         const now = new Date();
-
+        const tomorrow = now.setDate(now.getDate() + 1);
+    
         const targets = await Good.findAll({
             where : {
                 SoldId : null,
             }
         })
+  
         targets.forEach(async (target) => {
-            if(target.endTime.valueOf() <= now)
+            if(target.endTime.valueOf() <= now){
                 await successfulBid(target.id)
-            else
-                auctionSchedule(target.endTime, target.id)
+            }
+            else{
+                //  입찰 기한이 하루 이하로 남은 애들만 스케줄 등록 
+                if(target.endTime.valueOf() <= tomorrow.valueOf())
+                    auctionSchedule(target.endTime, target.id)
+            }
 
         })
     }catch(err){

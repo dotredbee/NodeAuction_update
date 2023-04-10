@@ -130,12 +130,12 @@ module.exports = {
 
             await Promise.all([
                 Good.update(
-                    { soldId : success.userId },
+                    { SoldId : success.UserId },
                     { where : { id : goodId }}
                 ),
                 User.update(
                     { money : sequelize.literal(`money - ${success.bid}`)},
-                    { where : { id : success.userId }}
+                    { where : { id : success.UserId }}
                 )
             ])
        }catch(err){
@@ -153,7 +153,7 @@ module.exports = {
      * @param {Date} endTime    경매 마감 시간
      * @param {String} id       good id 
      */
-    auctionSchedule : async function(endTime, id){
+    auctionSchedule : function(endTime, id){
         try{
             schedule.scheduleJob(endTime, async () => {
                 await this.successfulBid(id)
