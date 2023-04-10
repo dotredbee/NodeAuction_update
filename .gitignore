@@ -1,9 +1,12 @@
+# config files
 config/config.json
+config/prod.js
 
+
+# default
 node_modules
-
 .env
-
 seeders
 
+#upload flies
 uploads

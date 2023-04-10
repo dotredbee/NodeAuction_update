@@ -6,8 +6,6 @@ const session = require('express-session')
 const logger = require('morgan');
 const flash = require('connect-flash')
 const passport = require('passport')
-const dotenv = require('dotenv')
-dotenv.config()
 const checkAuction = require('./modules/checkAuction.module')
 
 const indexRouter = require('./routes/index');
@@ -18,7 +16,8 @@ const passportConfig = require('./passport')
 
 const app = express();
 
-
+const config = require('./config')
+const {  serverSecret, sessionDetail } = config 
 
 
 // view engine setup
@@ -29,9 +28,7 @@ nunjucks.configure('views', {
   watch: true,
 });
 
-// User.sync({force : true})
-// Good.sync(({force : true}))
-// Auction.sync({force : true})
+
 sequelize.sync({ force : false })
   .then(() => { 
     console.log('successed connect database')
@@ -43,16 +40,8 @@ passportConfig(passport)
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(session({
-  resave : false,
-  saveUninitialized : false,
-  secret : process.env.COOKIE_SECRET,
-  cookie : {
-    httpOnly : true,
-    secure : false, 
-  }
-}))
+app.use(cookieParser(serverSecret));
+app.use(session(sessionDetail))
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(flash())

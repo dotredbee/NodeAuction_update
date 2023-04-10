@@ -1,4 +1,6 @@
 const csurf = require('csurf')
+const { cookie } = require('../config')
+
 exports.isLoggedIn = (req, res, next) => {
     if(req.isAuthenticated()) next()
     else {
@@ -24,9 +26,5 @@ exports.isNotLoggedIn = (req, res, next) => {
  * 다른 도메인에서는 사용하지 않을 예정입니다.
  */
 exports.csurfProtection = csurf({
-    cookie : {
-        httpOnly : true, 
-        secure : false,
-        sameSite : 'strict'
-    }
+    cookie : cookie.lax
 })
