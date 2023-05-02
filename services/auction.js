@@ -1,5 +1,8 @@
 const { User, Good, Auction, sequelize } = require('../models')
 const schedule = require('node-schedule')
+const Redis = require('../modules/redis.module')
+const redisInstance = Redis.getInstance()
+const goodSubscribe = require('../sub/good')
 module.exports = {
 
     /**
@@ -59,7 +62,13 @@ module.exports = {
     
     showAll : async function(){
         try{
-            return await Good.findAll({ where : { soldId : null }})
+            let goods = await redisInstance.get('goods')
+            if(!goods || (Array.isArray(goods) && goods.length === 0)){
+                goods = await Good.findAll({ where : { SoldId : null }})
+                goodSubscribe.emit('save', goods)
+            }
+            
+            return goods            
         }catch(err){
             throw err
         }

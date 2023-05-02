@@ -30,7 +30,7 @@ exports.join = async (req, res, next) =>{
         })
         
     } catch (error) {
-        return next(error);
+        res.redirect('/')
     }
 }
 
@@ -62,7 +62,7 @@ exports.login = async (req, res, next) =>{
         });
       })(req, res, next);
     }catch(err) {
-      next(err)
+      res.redirect('/')
     }
 }
 

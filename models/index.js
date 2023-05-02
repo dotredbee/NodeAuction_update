@@ -7,17 +7,19 @@ const process = require('process');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
+const { mysqlDetail } = require('../config')
 const db = {};
 
 let sequelize;
 
 if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+  sequelize = new Sequelize(process.env[config.use_env_variable], mysqlDetail);
 } else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
+  sequelize = new Sequelize(config.database, config.username, config.password, mysqlDetail);
 }
 
 db.sequelize = sequelize;
+
 
 fs
   .readdirSync(__dirname)
@@ -31,10 +33,8 @@ fs
   })
   .forEach(file => {
     const model = require(path.join(__dirname, file))
-    console.log(file, model.name)
     db[model.name] = model;
     const create = model.init(sequelize)
-    console.log(`model create : ${model.name} > `, create)
   });
 
 Object.keys(db).forEach(modelName => {

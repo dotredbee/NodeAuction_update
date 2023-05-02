@@ -18,14 +18,14 @@ module.exports = async function checkAuction() {
                 SoldId : null,
             }
         })
-  
         targets.forEach(async (target) => {
-            if(target.endTime.valueOf() <= now){
+
+            if(target.endTime.getTime() <= now.getTime()){
                 await successfulBid(target.id)
             }
             else{
                 //  입찰 기한이 하루 이하로 남은 애들만 스케줄 등록 
-                if(target.endTime.valueOf() <= tomorrow.valueOf())
+                if(target.endTime.getTime() <= tomorrow)
                     auctionSchedule(target.endTime, target.id)
             }
 

@@ -65,7 +65,7 @@
         return time.textContent = days + '일 ' + hours + ':' + minutes + ':' + seconds;
       }
     };
-    const socket = io.connect('http://localhost:3000', {
+    const socket = io.connect('http://localhost', {
       path: '/socket.io'
     });
     socket.on('bid', (data) => { // 누군가가 입찰했을 때

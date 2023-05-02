@@ -14,12 +14,15 @@ describe('auction service test', () => {
             
             if(!success) console.log(info.message)
             
+            const now = new Date()
+            const future = now.setDate(now.getDate() + 3) 
             // user id
             const goodDTO = {
                 ownerId : info.id,
                 name : "testAuctionItem",
                 img : "imgsource",
-                price : 10000
+                price : 10000,
+                endTime : future
             }
             AuctionService.register(goodDTO, (err, success, info) => {
                 if(err) return done(err)

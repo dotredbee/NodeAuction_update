@@ -1,21 +1,24 @@
 const AuctionService = require('../services/auction')
 const { cookie : { strict } } = require('../config')
 
+const Redis = require('../modules/redis.module')
 exports.renderIndex = async (req, res, next) => {
+    const csrfToken = req.csrfToken()
+    res.cookie('csrfToken', csrfToken, strict)
+
     try {
         const goods = await AuctionService.showAll()
-        const csrfToken = req.csrfToken()
-        
-        res.cookie('csrfToken', csrfToken, strict)
-
         res.render('index', {
             title: 'NodeAuction',
             _csrf : csrfToken,
             goods,
-            loginError: req.flash('loginError'),
         });
     } catch (error) {
-        next(error);
+        res.status(203).render('index', {
+            title : 'NodeAuction',
+            _csrf : csrfToken,
+            goods : [],
+        })
     }
 }
 

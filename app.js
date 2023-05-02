@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session')
 const logger = require('morgan');
 const flash = require('connect-flash')
+const cors = require('cors')
 const passport = require('passport')
 const checkAuction = require('./modules/checkAuction.module')
 
@@ -16,6 +17,10 @@ const passportConfig = require('./passport')
 
 const app = express();
 
+app.use(cors({
+  origin : 'http://localhost',
+  credentials : true 
+}))
 const config = require('./config')
 const {  serverSecret, sessionDetail } = config 
 

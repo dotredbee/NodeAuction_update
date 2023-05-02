@@ -29,7 +29,7 @@ exports.registerGood = async (req, res, next) => {
           res.redirect('/')
       })
     } catch (error) {
-      next(error);
+      res.redirect('/')
     }
 }
 
@@ -45,17 +45,17 @@ exports.showGood = async (req, res, next) => {
             
             if(success && info && info.hasOwnProperty("good") && info.hasOwnProperty("auction")) {
                 const { good, auction } = info;
-                
-                res.render('auction', {
+    
+                res.status(200).render('auction', {
                     title : `${good.name} - NodeAuction}`,
                     good,
                     auction,
-                    auctionError : req.flash('auctionError')
                 })
             }
         })
+        
     } catch (error) {
-        next(error);
+        res.redirect('/')
     }
 }
 
@@ -97,6 +97,6 @@ exports.bidGood = async (req, res, next) => {
             return res.status(200).send("ok")
         })
     } catch (error) {
-        return next(error);
+        res.status(203).send('falied')
     }
 }
